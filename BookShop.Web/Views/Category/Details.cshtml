@@ -4,32 +4,63 @@
     ViewData["Title"] = "Category Details";
 }
 
-<h1>Category Details</h1>
-
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CatName)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CatName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CatOrder)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CatOrder)
-        </dd>
-        <dt class="col-sm-2">
-            Is Active
-        </dt>
-        <dd class="col-sm-10">
-            @(Model.IsDeleted ? "No" : "Yes")
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">Edit</a>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-eye"></i> Category Details</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">
+                        <i class="fas fa-tag"></i> Category Name
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Model.CatName
+                    </dd>
+                    
+                    <dt class="col-sm-3">
+                        <i class="fas fa-sort-numeric-up"></i> Category Order
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Model.CatOrder
+                    </dd>
+                    
+                    <dt class="col-sm-3">
+                        <i class="fas fa-toggle-on"></i> Status
+                    </dt>
+                    <dd class="col-sm-9">
+                        <span class="badge @(Model.IsActive ? "bg-success" : "bg-danger")">
+                            <i class="fas @(Model.IsActive ? "fa-check" : "fa-times")"></i>
+                            @(Model.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </dd>
+                    
+                    <dt class="col-sm-3">
+                        <i class="fas fa-calendar"></i> Created Date
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Model.CreatedDate.ToString("MMM dd, yyyy - HH:mm")
+                    </dd>
+                </dl>
+                
+                <div class="d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                    
+                    <form asp-action="ToggleStatus" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn @(Model.IsActive ? "btn-warning" : "btn-success")">
+                            <i class="fas @(Model.IsActive ? "fa-pause" : "fa-play")"></i>
+                            @(Model.IsActive ? "Deactivate" : "Activate")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

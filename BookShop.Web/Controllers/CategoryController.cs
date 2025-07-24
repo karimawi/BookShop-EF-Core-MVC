@@ -1,43 +1,39 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using BookShop.DataAccess;
 using BookShop.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookShop.Web.Controllers
 {
     public class CategoryController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private const int PageSize = 10;
 
         public CategoryController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
+            var totalCategories = await _context.Categories
+                .Where(c => !c.IsDeleted)
+                .CountAsync();
+
             var categories = await _context.Categories
                 .Where(c => !c.IsDeleted)
                 .OrderBy(c => c.CatOrder)
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
                 .ToListAsync();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCategories / PageSize);
+            ViewBag.HasPreviousPage = page > 1;
+            ViewBag.HasNextPage = page < ViewBag.TotalPages;
+
             return View(categories);
-        }
-
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            return View(category);
         }
 
         public IActionResult Create()
@@ -47,13 +43,11 @@ namespace BookShop.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CatName,CatOrder")] Category category)
+        public async Task<IActionResult> Create(Category category)
         {
             if (ModelState.IsValid)
             {
-                category.CreatedDate = DateTime.Now;
-                category.IsDeleted = false;
-                _context.Add(category);
+                _context.Categories.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -75,10 +69,9 @@ namespace BookShop.Web.Controllers
             return View(category);
         }
 
-        // POST: Category/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CatName,CatOrder,IsDeleted")] Category category)
+        public async Task<IActionResult> Edit(int id, Category category)
         {
             if (id != category.Id)
             {
@@ -108,9 +101,26 @@ namespace BookShop.Web.Controllers
             return View(category);
         }
 
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, int page = 1)
         {
             var category = await _context.Categories.FindAsync(id);
             if (category != null)
@@ -119,7 +129,21 @@ namespace BookShop.Web.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { page = page });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleStatus(int id, int page = 1)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category != null && !category.IsDeleted)
+            {
+                category.IsActive = !category.IsActive;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index), new { page = page });
         }
 
         private bool CategoryExists(int id)

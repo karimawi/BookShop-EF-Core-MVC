@@ -4,19 +4,24 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BookShop.Models
 {
-    [Table("Categories", Schema = "MasterSchema")]
     public class Category
     {
-        [Key]
         public int Id { get; set; }
-
-        public string CatName { get; set; }
-
+        
+        // [Required]
+        // [MaxLength(50)]
+        public string CatName { get; set; } = string.Empty;
+        
+        // [Required]
         public int CatOrder { get; set; }
-
+        
+        // [DefaultValue(false)]
+        public bool IsDeleted { get; set; } = false;
+        
+        // [DefaultValue(true)]
+        public bool IsActive { get; set; } = true;
+        
         [NotMapped]
-        public DateTime CreatedDate { get; set; }
-
-        public bool IsDeleted { get; set; }
+        public DateTime CreatedDate => DateTime.Now;
     }
 }
