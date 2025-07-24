@@ -31,8 +31,8 @@ BookShop/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/bookshop.git
-   cd bookshop
+   git clone https://github.com/yourusername/BookShop-EF-Core-MVC.git
+   cd BookShop-EF-Core-MVC
    ```
 
 2. **Restore NuGet packages**
