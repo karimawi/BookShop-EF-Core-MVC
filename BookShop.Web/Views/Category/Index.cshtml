@@ -1,0 +1,105 @@
+@model IEnumerable<BookShop.Models.Category>
+
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-tags"></i> Categories</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Create New Category
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-tag"></i> Category Name</th>
+                        <th><i class="fas fa-sort-numeric-up"></i> Category Order</th>
+                        <th><i class="fas fa-toggle-on"></i> Is Active</th>
+                        <th><i class="fas fa-cogs"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+            @foreach (var item in Model) {
+                    <tr>
+                        <td>
+                            <strong>@Html.DisplayFor(modelItem => item.CatName)</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">@Html.DisplayFor(modelItem => item.CatOrder)</span>
+                        </td>
+                        <td>
+                            @if (item.IsDeleted)
+                            {
+                                <span class="badge bg-danger"><i class="fas fa-times"></i> No</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success"><i class="fas fa-check"></i> Yes</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" class="delete-form">
+                                    <button type="button" class="btn btn-sm btn-danger delete-btn" data-name="@item.CatName" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+            }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No categories found</h4>
+        <p class="text-muted">Get started by creating your first category.</p>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create First Category
+        </a>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.querySelectorAll('.delete-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const categoryName = this.getAttribute('data-name');
+                const form = this.closest('.delete-form');
+                
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to delete "${categoryName}" category. This action cannot be undone!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+}
