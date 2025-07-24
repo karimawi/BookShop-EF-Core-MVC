@@ -31,7 +31,7 @@ BookShop/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/BookShop-EF-Core-MVC.git
+   git clone https://github.com/karimawi/BookShop-EF-Core-MVC.git
    cd BookShop-EF-Core-MVC
    ```
 
