@@ -95,6 +95,7 @@ BookShop.Web/
 - **Edit**: Update existing categories
 - **Details**: View category information
 - **Delete**: Soft delete with confirmation
+- **Activate/Deactivate**: Toggle category activity status
 
 ## 🚀 Deployment
 
