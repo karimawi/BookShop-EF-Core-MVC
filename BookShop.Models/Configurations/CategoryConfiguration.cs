@@ -26,6 +26,10 @@ namespace BookShop.Models.Configurations
                 
             builder.Property(c => c.IsActive)
                 .HasDefaultValue(true);
+                
+            builder.Property(c => c.CreatedDate)
+                .HasDefaultValueSql("GETDATE()")
+                .ValueGeneratedOnAdd();
         }
     }
 }

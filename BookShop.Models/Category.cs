@@ -21,7 +21,7 @@ namespace BookShop.Models
         // [DefaultValue(true)]
         public bool IsActive { get; set; } = true;
         
-        [NotMapped]
-        public DateTime CreatedDate => DateTime.Now;
+        // [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime CreatedDate { get; set; }
     }
 }
