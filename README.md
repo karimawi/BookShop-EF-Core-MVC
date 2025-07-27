@@ -2,6 +2,14 @@
 
 A modern, feature-rich book management system built with ASP.NET Core 8 MVC and Entity Framework Core, featuring complete product and category management with real-time search, interactive tooltips, and a beautiful dark/light theme interface.
 
+## 📸 Screenshots
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://files.catbox.moe/ycpkvi.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://files.catbox.moe/4pg8a2.png">
+  <img alt="BookShop Application Interface" src="https://files.catbox.moe/4pg8a2.png" width="100%">
+</picture>
+
 ## 🏗️ Architecture
 
 The application follows a clean N-Tier architecture pattern:
