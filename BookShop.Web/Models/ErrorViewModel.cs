@@ -1,3 +1,4 @@
+#nullable enable
 namespace BookShop.Web.Models;
 
 public class ErrorViewModel
