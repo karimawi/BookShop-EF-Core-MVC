@@ -1,7 +1,68 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Home";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
+    <h1 class="display-4 mb-4">Welcome to BookShop</h1>
+    <p class="lead mb-4">Your one-stop destination for managing books and categories</p>
+    
+    <div class="row mt-5">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-tags fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Manage Categories</h5>
+                    <p class="card-text">Organize your books by creating and managing categories.</p>
+                    <a asp-controller="Category" asp-action="Index" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> View Categories
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-book fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Manage Products</h5>
+                    <p class="card-text">Add, edit, and manage your book collection.</p>
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-success">
+                        <i class="fas fa-arrow-right"></i> View Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-info-circle"></i> Features</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Category Management</li>
+                                <li><i class="fas fa-check text-success"></i> Product CRUD Operations</li>
+                                <li><i class="fas fa-check text-success"></i> Dark/Light Theme</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Responsive Design</li>
+                                <li><i class="fas fa-check text-success"></i> Search & Pagination</li>
+                                <li><i class="fas fa-check text-success"></i> Clean N-Tier Architecture</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Entity Framework Core</li>
+                                <li><i class="fas fa-check text-success"></i> Repository Pattern</li>
+                                <li><i class="fas fa-check text-success"></i> Modern UI/UX</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

@@ -6,13 +6,22 @@
     var totalPages = ViewBag.TotalPages as int? ?? 1;
     var hasPreviousPage = ViewBag.HasPreviousPage as bool? ?? false;
     var hasNextPage = ViewBag.HasNextPage as bool? ?? false;
+    var searchTerm = ViewBag.SearchTerm as string;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-list"></i> Categories</h1>
-    <a asp-action="Create" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Create New Category
-    </a>
+    <div class="d-flex align-items-center gap-2">
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input expanded" placeholder="Search categories..." />
+            <button type="button" id="searchToggle" class="search-toggle">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create New Category
+        </a>
+    </div>
 </div>
 
 @if (Model.Any())
@@ -76,7 +85,9 @@
             </div>
             <ul class="pagination pagination-sm mb-0">
                 <li class="page-item @(hasPreviousPage ? "" : "disabled")">
-                    <a class="page-link" asp-action="Index" asp-route-page="@(currentPage - 1)" 
+                    <a class="page-link" asp-action="Index" 
+                       asp-route-page="@(currentPage - 1)"
+                       asp-route-search="@searchTerm"
                        tabindex="@(hasPreviousPage ? "" : "-1")" 
                        aria-disabled="@(hasPreviousPage ? "false" : "true")">
                         <i class="fas fa-chevron-left"></i> Previous
@@ -86,12 +97,16 @@
                 @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
                 {
                     <li class="page-item @(i == currentPage ? "active" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                        <a class="page-link" asp-action="Index" 
+                           asp-route-page="@i"
+                           asp-route-search="@searchTerm">@i</a>
                     </li>
                 }
 
                 <li class="page-item @(hasNextPage ? "" : "disabled")">
-                    <a class="page-link" asp-action="Index" asp-route-page="@(currentPage + 1)" 
+                    <a class="page-link" asp-action="Index" 
+                       asp-route-page="@(currentPage + 1)"
+                       asp-route-search="@searchTerm"
                        tabindex="@(hasNextPage ? "" : "-1")" 
                        aria-disabled="@(hasNextPage ? "false" : "true")">
                         Next <i class="fas fa-chevron-right"></i>
@@ -119,8 +134,139 @@ else
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .search-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .search-toggle {
+            background: var(--bs-primary);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-toggle:hover {
+            background: var(--bs-primary);
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        [data-theme="dark"] .search-toggle {
+            background: #4DABF7;
+        }
+
+        [data-theme="dark"] .search-toggle:hover {
+            background: #4DABF7;
+        }
+
+        .search-input {
+            position: absolute;
+            right: 45px;
+            top: 0;
+            width: 250px;
+            height: 40px;
+            border: 2px solid var(--bs-primary);
+            border-radius: 8px;
+            padding: 0 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .search-input:focus {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+        }
+
+        [data-theme="dark"] .search-input {
+            background: #2d2d2d;
+            color: #f8f9fa;
+            border-color: #4DABF7;
+        }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const tableRows = document.querySelectorAll('tbody tr');
+            let allRowsData = [];
+
+            tableRows.forEach(row => {
+                const categoryName = row.cells[0].textContent.trim().toLowerCase();
+                allRowsData.push({
+                    element: row,
+                    categoryName: categoryName
+                });
+            });
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.trim().toLowerCase();
+                filterTable(searchTerm);
+            });
+
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
+
+            function filterTable(searchTerm) {
+                let visibleRows = 0;
+                
+                allRowsData.forEach(rowData => {
+                    if (searchTerm === '' || rowData.categoryName.includes(searchTerm)) {
+                        rowData.element.style.display = '';
+                        visibleRows++;
+                    } else {
+                        rowData.element.style.display = 'none';
+                    }
+                });
+
+                toggleNoResultsMessage(visibleRows === 0 && searchTerm !== '');
+                
+                const paginationContainer = document.querySelector('.pagination-container');
+                if (paginationContainer) {
+                    paginationContainer.style.display = searchTerm === '' ? '' : 'none';
+                }
+            }
+
+            function toggleNoResultsMessage(show) {
+                let noResultsRow = document.getElementById('noResultsRow');
+                
+                if (show && !noResultsRow) {
+                    const tbody = document.querySelector('tbody');
+                    noResultsRow = document.createElement('tr');
+                    noResultsRow.id = 'noResultsRow';
+                    noResultsRow.innerHTML = `
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            <i class="fas fa-search fa-2x mb-2"></i><br>
+                            No categories found matching your search.
+                        </td>
+                    `;
+                    tbody.appendChild(noResultsRow);
+                } else if (!show && noResultsRow) {
+                    noResultsRow.remove();
+                }
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchTerm = urlParams.get('search');
+            if (searchTerm) {
+                searchInput.value = searchTerm;
+                filterTable(searchTerm.toLowerCase());
+            }
+
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();

@@ -145,6 +145,31 @@ body {
   color: var(--text-color);
 }
 
+.form-select, select.form-control {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.form-select:focus, select.form-control:focus {
+  background-color: var(--card-bg);
+  border-color: var(--primary-color);
+  color: var(--text-color);
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-select option, select.form-control option {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .form-select option,
+[data-theme="dark"] select.form-control option {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
 
 .btn {
   font-weight: 500;
