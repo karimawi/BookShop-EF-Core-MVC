@@ -15,9 +15,9 @@ namespace BookShop.Web.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        public IActionResult Index(int page = 1, int? categoryFilter = null, string search = null)
+        public async Task<IActionResult> Index(int page = 1, int? categoryFilter = null, string search = null)
         {
-            var products = _unitOfWork.Product.GetAll(includeProperties: "Category");
+            var products = await _unitOfWork.Product.GetAllAsync(includeProperties: "Category");
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -46,58 +46,58 @@ namespace BookShop.Web.Controllers
             ViewBag.HasNextPage = page < ViewBag.TotalPages;
             ViewBag.CategoryFilter = categoryFilter;
             ViewBag.SearchTerm = search;
-            ViewBag.CategoryList = GetCategorySelectListForFilter();
+            ViewBag.CategoryList = await GetCategorySelectListForFilterAsync();
 
             return View(paginatedProducts);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewBag.CategoryList = GetCategorySelectList();
+            ViewBag.CategoryList = await GetCategorySelectListAsync();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Product product)
+        public async Task<IActionResult> Create(Product product)
         {
             if (ModelState.IsValid)
             {
                 if (product.Price < 1 || product.Price > 1000)
                 {
                     ModelState.AddModelError("Price", "Price must be between 1 and 1000");
-                    ViewBag.CategoryList = GetCategorySelectList();
+                    ViewBag.CategoryList = await GetCategorySelectListAsync();
                     return View(product);
                 }
 
                 _unitOfWork.Product.Add(product);
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.CategoryList = GetCategorySelectList();
+            ViewBag.CategoryList = await GetCategorySelectListAsync();
             return View(product);
         }
 
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = _unitOfWork.Product.Get(p => p.Id == id);
+            var product = await _unitOfWork.Product.GetAsync(p => p.Id == id);
             if (product == null)
             {
                 return NotFound();
             }
             
-            ViewBag.CategoryList = GetCategorySelectList();
+            ViewBag.CategoryList = await GetCategorySelectListAsync();
             return View(product);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Product product)
+        public async Task<IActionResult> Edit(int id, Product product)
         {
             if (id != product.Id)
             {
@@ -109,11 +109,11 @@ namespace BookShop.Web.Controllers
                 if (product.Price < 1 || product.Price > 1000)
                 {
                     ModelState.AddModelError("Price", "Price must be between 1 and 1000");
-                    ViewBag.CategoryList = GetCategorySelectList();
+                    ViewBag.CategoryList = await GetCategorySelectListAsync();
                     return View(product);
                 }
 
-                var existingProduct = _unitOfWork.Product.Get(p => p.Id == id);
+                var existingProduct = await _unitOfWork.Product.GetAsync(p => p.Id == id);
                 if (existingProduct == null)
                 {
                     return NotFound();
@@ -125,22 +125,22 @@ namespace BookShop.Web.Controllers
                 existingProduct.Price = product.Price;
                 existingProduct.CategoryId = product.CategoryId;
 
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
             
-            ViewBag.CategoryList = GetCategorySelectList();
+            ViewBag.CategoryList = await GetCategorySelectListAsync();
             return View(product);
         }
 
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = _unitOfWork.Product.Get(p => p.Id == id, includeProperties: "Category");
+            var product = await _unitOfWork.Product.GetAsync(p => p.Id == id, includeProperties: "Category");
             if (product == null)
             {
                 return NotFound();
@@ -151,18 +151,44 @@ namespace BookShop.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var product = _unitOfWork.Product.Get(p => p.Id == id);
+            var product = await _unitOfWork.Product.GetAsync(p => p.Id == id);
             if (product != null)
             {
                 _unitOfWork.Product.Remove(product);
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
             }
 
             return RedirectToAction(nameof(Index));
         }
 
+        private async Task<IEnumerable<SelectListItem>> GetCategorySelectListAsync()
+        {
+            var categories = await _unitOfWork.Category.GetAllAsync(filter: c => !c.IsDeleted && c.IsActive);
+            return categories.Select(c => new SelectListItem
+            {
+                Text = c.CatName,
+                Value = c.Id.ToString()
+            });
+        }
+
+        private async Task<IEnumerable<SelectListItem>> GetCategorySelectListForFilterAsync()
+        {
+            var categories = await _unitOfWork.Category.GetAllAsync(filter: c => !c.IsDeleted && c.IsActive);
+            var categoryList = categories.Select(c => new SelectListItem
+            {
+                Text = c.CatName,
+                Value = c.Id.ToString()
+            }).ToList();
+
+            // Add "All Categories" option at the beginning
+            categoryList.Insert(0, new SelectListItem { Text = "All Categories", Value = "" });
+            return categoryList;
+        }
+
+        // Synchronous helper methods commented out to force async usage
+        /*
         private IEnumerable<SelectListItem> GetCategorySelectList()
         {
             return _unitOfWork.Category.GetAll(filter: c => !c.IsDeleted && c.IsActive)
@@ -186,31 +212,32 @@ namespace BookShop.Web.Controllers
             categories.Insert(0, new SelectListItem { Text = "All Categories", Value = "" });
             return categories;
         }
+        */
 
         // Development reset route
         [Route("reset")]
-        public IActionResult ResetDatabase()
+        public async Task<IActionResult> ResetDatabase()
         {
             try
             {
                 // Delete all products first (due to foreign key constraint)
-                var products = _unitOfWork.Product.GetAll().ToList();
+                var products = (await _unitOfWork.Product.GetAllAsync()).ToList();
                 foreach (var product in products)
                 {
                     _unitOfWork.Product.Remove(product);
                 }
 
                 // Delete all categories
-                var categories = _unitOfWork.Category.GetAll().ToList();
+                var categories = (await _unitOfWork.Category.GetAllAsync()).ToList();
                 foreach (var category in categories)
                 {
                     _unitOfWork.Category.Remove(category);
                 }
 
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
 
                 // Reset identity columns
-                _unitOfWork.ResetIdentityColumns();
+                await _unitOfWork.ResetIdentityColumnsAsync();
 
                 return Json(new { success = true, message = "Database has been reset successfully!" });
             }

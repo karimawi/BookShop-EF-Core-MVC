@@ -14,9 +14,9 @@ namespace BookShop.Web.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        public IActionResult Index(int page = 1, string search = null)
+        public async Task<IActionResult> Index(int page = 1, string search = null)
         {
-            var categories = _unitOfWork.Category.GetAll(
+            var categories = await _unitOfWork.Category.GetAllAsync(
                 filter: c => !c.IsDeleted,
                 orderBy: q => q.OrderBy(c => c.CatOrder).ThenByDescending(c => c.CatName)
             );
@@ -50,25 +50,25 @@ namespace BookShop.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Category category)
+        public async Task<IActionResult> Create(Category category)
         {
             if (ModelState.IsValid)
             {
                 _unitOfWork.Category.Add(category);
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
         }
 
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var category = _unitOfWork.Category.Get(c => c.Id == id);
+            var category = await _unitOfWork.Category.GetAsync(c => c.Id == id);
             if (category == null || category.IsDeleted)
             {
                 return NotFound();
@@ -78,7 +78,7 @@ namespace BookShop.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Category category)
+        public async Task<IActionResult> Edit(int id, Category category)
         {
             if (id != category.Id)
             {
@@ -89,7 +89,7 @@ namespace BookShop.Web.Controllers
             {
                 try
                 {
-                    var existingCategory = _unitOfWork.Category.Get(c => c.Id == id);
+                    var existingCategory = await _unitOfWork.Category.GetAsync(c => c.Id == id);
                     if (existingCategory == null)
                     {
                         return NotFound();
@@ -99,11 +99,11 @@ namespace BookShop.Web.Controllers
                     existingCategory.CatOrder = category.CatOrder;
                     existingCategory.IsActive = category.IsActive;
                     
-                    _unitOfWork.Save();
+                    await _unitOfWork.SaveAsync();
                 }
                 catch (Exception)
                 {
-                    if (!CategoryExists(category.Id))
+                    if (!await CategoryExistsAsync(category.Id))
                     {
                         return NotFound();
                     }
@@ -117,14 +117,14 @@ namespace BookShop.Web.Controllers
             return View(category);
         }
 
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var category = _unitOfWork.Category.Get(c => c.Id == id && !c.IsDeleted);
+            var category = await _unitOfWork.Category.GetAsync(c => c.Id == id && !c.IsDeleted);
             if (category == null)
             {
                 return NotFound();
@@ -135,13 +135,13 @@ namespace BookShop.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id, int page = 1)
+        public async Task<IActionResult> Delete(int id, int page = 1)
         {
-            var category = _unitOfWork.Category.Get(c => c.Id == id);
+            var category = await _unitOfWork.Category.GetAsync(c => c.Id == id);
             if (category != null)
             {
                 category.IsDeleted = true;
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
             }
 
             return RedirectToAction(nameof(Index), new { page = page });
@@ -149,22 +149,30 @@ namespace BookShop.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ToggleStatus(int id, int page = 1)
+        public async Task<IActionResult> ToggleStatus(int id, int page = 1)
         {
-            var category = _unitOfWork.Category.Get(c => c.Id == id);
+            var category = await _unitOfWork.Category.GetAsync(c => c.Id == id);
             if (category != null && !category.IsDeleted)
             {
                 category.IsActive = !category.IsActive;
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
             }
 
             return RedirectToAction(nameof(Index), new { page = page });
         }
 
+        private async Task<bool> CategoryExistsAsync(int id)
+        {
+            return await _unitOfWork.Category.GetAsync(c => c.Id == id && !c.IsDeleted) != null;
+        }
+
+        // Synchronous method commented out to force async usage
+        /*
         private bool CategoryExists(int id)
         {
             return _unitOfWork.Category.Get(c => c.Id == id && !c.IsDeleted) != null;
         }
+        */
 
         // Static pages
         [Route("Home")]
